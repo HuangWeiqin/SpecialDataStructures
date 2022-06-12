@@ -14,5 +14,5 @@ class AutoMachineNode
         bool machine_trigger(int);
     private:
         bool node_add_transition(int,int); // trigger, next node
-        bool machine_trigger(int); fuck
+        bool machine_trigger(int);
 };
