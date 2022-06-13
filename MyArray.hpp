@@ -1,6 +1,6 @@
 #include <vector>
 using namespace std;
-
+//my array for vector
 template <typename T>
 class MyArray{
     public:
