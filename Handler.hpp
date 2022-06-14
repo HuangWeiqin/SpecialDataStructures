@@ -4,12 +4,12 @@ class Handler{
     public:
         Handler();
         Handler(const Handler<T>&);
-        virtual Handler& operator=(const Handler<T>&);
+        virtual Handler<T>& operator=(const Handler<T>&);
         virtual ~Handler();
+        T *data = nullptr;
     protected:
         int *count = nullptr;
-        T *data = nullptr;
-        void writing();
+        virtual void writing();
         virtual void copy_data() = 0;
     private:
         void inc();
@@ -17,10 +17,10 @@ class Handler{
 };
 
 template <typename T>
-Handler<T>::Handler():data(new T()),count(new int(1)){}
+Handler<T>::Handler():data(new T(1)),count(new int(1)){}
 
 template <typename T>
-Handler<T>::Handler(const Handler& other):count(other.count){
+Handler<T>::Handler(const Handler<T>& other):count(other.count){
     data = other.data;
     inc();
 }
