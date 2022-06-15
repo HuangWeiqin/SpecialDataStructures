@@ -2,32 +2,8 @@
 #include <list>
 #include <iostream>
 #include "Handler.hpp"
+#include "ListIdxIterManager.hpp"
 using namespace std;
-
-template <typename T>
-class ListIdxIter{
-    public:
-        ListIdxIter(){};
-        ListIdxIter(int i, typename list<T>::iterator iter):idx(i),iterator(iter){};
-        ListIdxIter(const ListIdxIter& iter):idx(iter.idx),iterator(iter.iterator){};
-        int idx;
-        typename list<T>::iterator iterator;
-
-        ListIdxIter<T>& operator+=(int diff){
-            for(int i=0;i<diff;++i){
-                iterator++;
-            }
-            idx += diff;
-        }
-
-        ListIdxIter<T>& operator-=(int diff){
-            for(int i=0;i<diff;++i){
-                iterator--;
-            }
-            idx -= diff;
-        }
-
-};
 
 template <typename T>
 class ArrayList: public Handler<list<T>>{
