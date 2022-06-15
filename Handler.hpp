@@ -6,8 +6,9 @@ class Handler{
         Handler(const Handler<T>&);
         virtual Handler<T>& operator=(const Handler<T>&);
         virtual ~Handler();
-        T *data = nullptr;
+        
     protected:
+        T *data = nullptr;
         int *count = nullptr;
         virtual void writing();
         virtual void copy_data() = 0;
@@ -17,7 +18,7 @@ class Handler{
 };
 
 template <typename T>
-Handler<T>::Handler():data(new T(1)),count(new int(1)){}
+Handler<T>::Handler():data(new T()),count(new int(1)){}
 
 template <typename T>
 Handler<T>::Handler(const Handler<T>& other):count(other.count){

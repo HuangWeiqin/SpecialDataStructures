@@ -5,6 +5,31 @@
 using namespace std;
 
 template <typename T>
+class ListIdxIter{
+    public:
+        ListIdxIter(){};
+        ListIdxIter(int i, typename list<T>::iterator iter):idx(i),iterator(iter){};
+        ListIdxIter(const ListIdxIter& iter):idx(iter.idx),iterator(iter.iterator){};
+        int idx;
+        typename list<T>::iterator iterator;
+
+        ListIdxIter<T>& operator+=(int diff){
+            for(int i=0;i<diff;++i){
+                iterator++;
+            }
+            idx += diff;
+        }
+
+        ListIdxIter<T>& operator-=(int diff){
+            for(int i=0;i<diff;++i){
+                iterator--;
+            }
+            idx -= diff;
+        }
+
+};
+
+template <typename T>
 class ArrayList: public Handler<list<T>>{
     public:
         ArrayList();
@@ -14,30 +39,31 @@ class ArrayList: public Handler<list<T>>{
         void push_back(T);
         void push_front(T&);
         void push_front(T);
+        void insert(typename list<T>::iterator iter,T& val);
         typename list<T>::iterator begin();
         typename list<T>::iterator end();
         ArrayList<T> get(int from,int to);
         int size();
         void printf();
-        typename list<T>::iterator begin_iterator;
-        typename list<T>::iterator end_iterator;
     protected:
         virtual void copy_data() override;
     private:
-        int begin_idx = -1;
-        int end_idx = -1;
-        
+        ListIdxIter<T> begin_iterator;
+        ListIdxIter<T> end_iterator;
+        list<ListIdxIter<T>> iter_markers;
+
         void set_slice(int from,int to);
         bool is_slice();
 
+        ListIdxIter<T>& find_nearest_iter(int);
+        ListIdxIter<T>& move_iter_to(ListIdxIter<T>& iter, int dest_idx);
+        ListIdxIter<T>& get_iter(int idx);
 };
 
 template <typename T>
 ArrayList<T>::ArrayList():
-    begin_idx(0),
-    end_idx(0),
-    begin_iterator(this->data->begin()),
-    end_iterator(this->data->end())
+    begin_iterator(0,this->data->begin()),
+    end_iterator(0,this->data->end())
     {}
 
 template <typename T>
@@ -50,50 +76,56 @@ ArrayList<T>::ArrayList(int nb,const T* array):ArrayList(){
 template <typename T>
 ArrayList<T>::ArrayList(const ArrayList<T>& other):
     Handler<list<T>>(other),
-    begin_idx(other.begin_idx),
-    end_idx(other.end_idx),
     begin_iterator(other.begin_iterator),
     end_iterator(other.end_iterator)
     {}
 
 template <typename T>
 void ArrayList<T>::copy_data(){
-    this->data = new list<T>(begin_iterator, end_iterator);
-    end_idx = this->data->size();
-    begin_idx = 0;
-    begin_iterator = this->data->begin();
-    end_iterator = this->data->end();
-    cout<<"copy data"<<endl;
+    this->data = new list<T>(begin_iterator.iterator, end_iterator.iterator);
+    end_iterator.idx = this->data->size();
+    begin_iterator.idx = 0;
+    begin_iterator.iterator = this->data->begin();
+    end_iterator.iterator = this->data->end();
+}
+
+template <typename T>
+void ArrayList<T>::insert(typename list<T>::iterator iter,T& val){
+    this->data->insert(iter,val);
+    if(this->data->size()==1){
+        begin_iterator = ListIdxIter<T>(0,this->data->begin());
+        end_iterator = ListIdxIter<T>(0,this->data->end());
+    }
 }
 
 template <typename T>
 void ArrayList<T>::push_back(T &a){
     this->writing();
-    this->data->insert(end_iterator,a);
-    end_idx++;
+    insert(end_iterator.iterator,a);
+    end_iterator.idx++;
 }
 
 template <typename T>
 void ArrayList<T>::push_back(T a){
     this->writing();
-    this->data->insert(end_iterator,a);
-    end_idx++;
+    insert(end_iterator.iterator,a);
+    end_iterator.idx++;
 }
 
 template <typename T>
 void ArrayList<T>::push_front(T &a){
     this->writing();
-    this->data->insert(begin_iterator,a);
-    end_idx++;
-    begin_iterator--;
+    insert(begin_iterator.iterator,a);
+    end_iterator.idx++;
+    begin_iterator.idx--;
 }
 
 template <typename T>
 void ArrayList<T>::push_front(T a){
     this->writing();
-    this->data->insert(begin_iterator,a);
-    end_idx++;
-    begin_iterator--;
+    insert(begin_iterator.iterator,a);
+    end_iterator.idx++;
+    begin_iterator.idx--;
 }
 
 template <typename T>
@@ -102,16 +134,18 @@ void ArrayList<T>::printf(){
         cout << i<<' ';
     }
     cout<<"count: "<< *this->count << endl;
+    cout<<"begin: "<< begin_iterator.idx<<endl;
+    cout<<"end: "<< end_iterator.idx<<endl;
 }
 
 template <typename T>
 typename list<T>::iterator ArrayList<T>::begin(){
-    return begin_iterator;
+    return begin_iterator.iterator;
 }
 
 template <typename T>
 typename list<T>::iterator ArrayList<T>::end(){
-    return end_iterator;
+    return end_iterator.iterator;
 }
 
 template <typename T>
@@ -123,17 +157,60 @@ ArrayList<T> ArrayList<T>::get(int from,int to){
 
 template <typename T>
 void ArrayList<T>::set_slice(int from,int to){
-
+    end_iterator = get_iter(to);
+    begin_iterator = get_iter(from);
+    iter_markers.clear();
+    iter_markers.emplace_back(begin_iterator);
+    iter_markers.emplace_back(end_iterator);
 }
 
 template <typename T>
 bool ArrayList<T>::is_slice(){
-    return begin_idx>0 || end_idx<size();
+    return begin_iterator.idx>0 || end_iterator.idx<size();
 }
 
 template <typename T>
 int ArrayList<T>::size(){
-    return this->data->size();
+    return end_iterator.idx - begin_iterator.idx;
+}
+
+template <typename T>
+ListIdxIter<T>& ArrayList<T>::find_nearest_iter(int idx){
+    if(iter_markers.size() == 0){
+        return begin_iterator;
+    }
+
+    ListIdxIter<T>* best = nullptr;
+    int diff = 65535;
+    for(ListIdxIter<T>& iter: iter_markers){
+        int tmp_diff = abs(iter.idx - idx);
+        if(tmp_diff < diff){
+            best = &iter;
+            diff = tmp_diff;
+        }
+    }
+    
+    return *best;
+}
+
+template <typename T>
+ListIdxIter<T>& ArrayList<T>::move_iter_to(ListIdxIter<T>& iter,int idx){
+    if(iter.idx == idx){
+        return iter;
+    }
+    else if(iter.idx < idx){
+        iter += idx - iter.idx;
+    }
+    else{
+        iter -= iter.idx - idx;
+    }
+    return iter;
+}
+
+template <typename T>
+ListIdxIter<T>& ArrayList<T>::get_iter(int idx){
+    ListIdxIter<T>& nearby_iter = find_nearest_iter(idx);
+    return move_iter_to(nearby_iter,idx);
 }
 
 #define ARRAYLIST_INCLUDED

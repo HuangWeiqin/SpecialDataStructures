@@ -4,10 +4,12 @@ using namespace std;
 int main()
 {
     ArrayList<char> list(6,"fucker");
-    ArrayList<char> tmp = list.get(1,4);
-    for(char c:tmp){
-        cout<<c;
+    //list =list.get(0,7);
+    list.printf();
+
+    for(char c:list){
+        cout<< c;
     }
-    tmp.printf();
+    cout<<endl;
     return 0;
 }
