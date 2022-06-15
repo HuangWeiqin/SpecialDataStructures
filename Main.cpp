@@ -41,7 +41,10 @@ void test2(){
 }
 
 void test3(){
-    ListNode<char> ln(5,"dsestts");
+    ListNode<char> ls(1,"d");
+    ListNode<char> ln(ls);
+    ln.emplace(5,"xxxextts");
+
     ln.debug_print();
 }
 
