@@ -1,6 +1,7 @@
 #include <iostream>
 #include "ArrayList.hpp"
 #include "ListIdxIterManager.hpp"
+#include "ListNode.hpp"
 
 using namespace std;
 
@@ -39,8 +40,13 @@ void test2(){
 
 }
 
+void test3(){
+    ListNode<char> ln(5,"dsestts");
+    ln.debug_print();
+}
+
 int main()
 {
-    test2();
+    test3();
     return 0;
 }
