@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ListNode.hpp"
+#include "AvlTreeNode.hpp"
 
 using namespace std;
 
@@ -12,16 +13,26 @@ void test3(){
 }
 
 void test4(){
-    ListNode<char> tmp(4,"xxxx");
-    ListNode<char> p(3,"sdf");
+    ListNode<char> tmp(5,"xxxxx");
+    ListNode<char> p;
+    p.push_front('e');
     tmp = p;
-    tmp.push_front('x');
+    tmp.push_front('s');
     tmp.debug_print();
     p.debug_print();
 }
 
+void test5(){
+    AVL_tree<int> avls;
+    for(int i=0;i<128;++i){
+        avls.push(3*i,3*-i);
+    }
+    cout<<"find "<< avls.find(125)<<endl;
+    cout<<"high "<< avls.high()<<endl;
+}
+
 int main()
 {
-    test4();
+    test5();
     return 0;
 }

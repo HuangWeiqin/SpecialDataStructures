@@ -52,8 +52,6 @@ ListNode<T>& ListNode<T>::operator=(const ListNode<T>& other){
     if(this == &other){
         return *this;
     }
-
-
     data = other.data;
     destroy_others();
 
@@ -110,7 +108,6 @@ ListNode<T>::ListNode(int nb, const T* ptr):ListNode<T>(){
 template <typename T>
 ListNode<T>::~ListNode(){
     if(!meta_info->destroying){
-        
         destroy_others();
         delete meta_info;
     }
