@@ -3,18 +3,24 @@ template <typename T>
 class Handler{
     public:
         Handler();
+        Handler(const T& dt):data(new T(dt)),count(new int(1)){}
         Handler(const Handler<T>&);
         virtual Handler<T>& operator=(const Handler<T>&);
+        virtual Handler<T>& share_from(const Handler<T>&);
         virtual ~Handler();
-        
-    protected:
-        T *data = nullptr;
         int *count = nullptr;
-        virtual void writing();
-        virtual void copy_data() = 0;
     private:
         void inc();
         void dec();
+        T *data = nullptr;
+        
+    protected:
+        const T& value() const {return *data;}
+        void set_value(const T& dt){writing(),*data = dt;}
+        int share_count(){return *count;}
+        virtual void writing();
+        virtual void copy_data(){data = new T();};
+    
 };
 
 template <typename T>
@@ -28,6 +34,11 @@ Handler<T>::Handler(const Handler<T>& other):count(other.count){
 
 template <typename T>
 Handler<T>& Handler<T>::operator=(const Handler<T>& other){
+    return share_from(other);
+}
+
+template <typename T>
+Handler<T>& Handler<T>::share_from(const Handler<T>& other){
     if(this != &other){
         dec();
         count = other.count;
