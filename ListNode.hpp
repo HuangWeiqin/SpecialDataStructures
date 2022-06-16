@@ -12,7 +12,7 @@ class LN_MetaData{
         int size = 0;
         ListNode<T> *head = nullptr;
         ListNode<T> *tail = nullptr;
-        bool destroyed = false;
+        bool destroying = false;
 };
 
 template <typename T>
@@ -26,10 +26,12 @@ class ListNode{
         virtual ListNode<T>& operator=(const ListNode<T>&);
         void emplace(int,const T*);
         void debug_print();
+        ListNode<T>* push_back(const T&);
+        ListNode<T>* push_front(const T&);
         ListNode<T>* insert_right(const T&);
         ListNode<T>* insert_left(const T&);
         void set_value(const T& dt){data = dt;}
-        const T& value() const {return data;}
+        T& value() {return data;}
     private:
         ListNode(const T&,LN_MetaData<T> *);
         ListNode(const ListNode<T>&,LN_MetaData<T> *);
@@ -47,12 +49,24 @@ class ListNode{
 
 template <typename T>
 ListNode<T>& ListNode<T>::operator=(const ListNode<T>& other){
+    if(this == &other){
+        return *this;
+    }
+
+
+    data = other.data;
+    destroy_others();
+
     meta_info->size = other.meta_info->size;
     if(other.left != nullptr){
+        
         left = other.left->copy_left(meta_info);
+        left->right = this;
     }
     if(other.right != nullptr){
+        
         right = other.right->copy_right(meta_info);
+        right->left = this;
     }
 }
 
@@ -64,13 +78,7 @@ ListNode<T>::ListNode(const T &dt, LN_MetaData<T> *meta):data(dt),meta_info(meta
 
 template <typename T>
 ListNode<T>::ListNode(const ListNode<T>& other):data(other.data),meta_info(new LN_MetaData<T>(1,this,this)){
-    meta_info->size = other.meta_info->size;
-    if(other.left != nullptr){
-        left = other.left->copy_left(meta_info);
-    }
-    if(other.right != nullptr){
-        right = other.right->copy_right(meta_info);
-    }
+    operator=(other);
 }
 
 template <typename T>
@@ -101,8 +109,8 @@ ListNode<T>::ListNode(int nb, const T* ptr):ListNode<T>(){
 
 template <typename T>
 ListNode<T>::~ListNode(){
-    if(!meta_info->destroyed){
-        meta_info->destroyed = true;
+    if(!meta_info->destroying){
+        
         destroy_others();
         delete meta_info;
     }
@@ -131,9 +139,10 @@ void ListNode<T>::destroy_right(){
 
 template <typename T>
 void ListNode<T>::destroy_others(){
+    meta_info->destroying = true;
     destroy_left();
     destroy_right();
-    
+    meta_info->destroying = false;
 }
 
 template <typename T>
@@ -141,9 +150,10 @@ ListNode<T>* ListNode<T>::copy_left(LN_MetaData<T> *meta){
     ListNode<T>* copy = new ListNode<T>(*this,meta);
     if(left != nullptr){
         copy->left = left->copy_left(meta);
+        copy->left->right = copy;
     }
     else{
-        meta->head = this;
+        meta->head = copy;
     }
     return copy;
 }
@@ -153,9 +163,10 @@ ListNode<T>* ListNode<T>::copy_right(LN_MetaData<T> *meta){
     ListNode<T>* copy = new ListNode<T>(*this,meta);
     if(right != nullptr){
         copy->right = right->copy_right(meta);
+        copy->right->left = copy;
     }
     else{
-        meta->tail = this;
+        meta->tail = copy;
     }
 
     return copy;
@@ -165,12 +176,12 @@ ListNode<T>* ListNode<T>::copy_right(LN_MetaData<T> *meta){
 
 template <typename T>
 void ListNode<T>::debug_print(){
-    ListNode<T> *cur = meta_info->head;
+    ListNode<T> *cur = this;
 
-    cout<<" size: "<<meta_info->size<<endl;
+    cout<<"size: "<<meta_info->size<<endl;
     while (cur != nullptr)
     {
-        cout<<cur->value() <<" size: "<< cur->meta_info->size<< endl;
+        cout<<cur->value();
         cur = cur->right;
     }
     cout<<endl;
@@ -179,7 +190,7 @@ void ListNode<T>::debug_print(){
 template <typename T>
 ListNode<T>* ListNode<T>::insert_right(const T& val){
     if(meta_info->size++ == 0){
-        this->set_value(val);
+        data = val;
         return this;
     }
 
@@ -203,7 +214,7 @@ ListNode<T>* ListNode<T>::insert_right(const T& val){
 template <typename T>
 ListNode<T>* ListNode<T>::insert_left(const T& val){
     if(meta_info->size++ == 0){
-        this->set_value(val);
+        data = val;
         return this;
     }
 
@@ -222,6 +233,23 @@ ListNode<T>* ListNode<T>::insert_left(const T& val){
     }
 
     return newcommer;
+}
+
+template <typename T>
+ListNode<T>* ListNode<T>::push_back(const T& val){
+    return meta_info->tail->insert_right(val);
+}
+
+template <typename T>
+ListNode<T>* ListNode<T>::push_front(const T& val){
+    if(meta_info->head == this){
+        insert_right(data);
+        data = val;
+    }
+    else{
+        meta_info->head->insert_left(val);
+    }
+    return meta_info->head;
 }
 
 #define LISTNODE_INCLUDED
