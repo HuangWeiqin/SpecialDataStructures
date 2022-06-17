@@ -1,4 +1,5 @@
 #ifndef AVLTREENODE_INCLUDED
+#include <iostream>
 template <typename T>
 class AvlTreeNode
 {
@@ -8,6 +9,26 @@ class AvlTreeNode
         int high();
         AvlTreeNode<T> * find(int v);
         T &value(){return data;}
+        void debug_prinf(){
+            cout<<" v:"<<val<<" H:"<<_high;
+            if(left != nullptr){
+                cout<<" L:"<<left->val;
+            }
+            if(right != nullptr){
+                cout<<" R:"<<right->val;
+            }
+            if(father){
+                cout<<" F:"<<father->val;
+            }
+            cout<<endl;
+            if(left != nullptr){
+                left->debug_prinf();
+            }
+            if(right != nullptr){
+                right->debug_prinf();
+            }
+        }
+
     private:
         int val;
         T data;
@@ -38,12 +59,14 @@ AvlTreeNode<T>* AvlTreeNode<T>::push(int v,const T& dt){
     }
     else if (v < val){
         left  = left_push(v,dt);
+        left->father = this;
         if(left_high() - right_high() > 1){
             res =  rotate_left();
         }
     }
     else{
         right = right_push(v,dt);
+        right->father = this;
         if(right_high() - left_high() > 1){
             res = rotate_right();
         }
@@ -92,9 +115,13 @@ template <typename T>
 AvlTreeNode<T> * AvlTreeNode<T>:: rotate_left(){
     AvlTreeNode<T> * new_root = left;
     left = new_root->right;
+    if(left != nullptr)
+        left->father = this;
     new_root->right = this;
     father = new_root;
     new_root->father=nullptr;
+    update_high();
+    new_root->update_high();
     return new_root;
 }
 template <typename T>
@@ -102,9 +129,13 @@ AvlTreeNode<T> * AvlTreeNode<T>:: rotate_right(){
     
     AvlTreeNode<T> * new_root = right;
     right = new_root->left;
+    if(right != nullptr)
+        right->father = this;
     new_root->left = this;
     father = new_root;
     new_root->father=nullptr;
+    update_high();
+    new_root->update_high();
     return new_root;
 }
 
@@ -128,7 +159,6 @@ AvlTreeNode<T> * AvlTreeNode<T>:: find(int v){
     else if (v < val)
     {
         if(left != nullptr){
-
             AvlTreeNode<T> *tmp = left->find(v);
             if(abs(v - val) < abs(v - tmp->val)){
                 return this;
@@ -136,14 +166,12 @@ AvlTreeNode<T> * AvlTreeNode<T>:: find(int v){
             else{
                 return tmp;
             }
-
         }else{
            return this;
         }
     }
     else{
         if(right != nullptr){
-
             AvlTreeNode<T> *tmp = right->find(v);
             if(abs(v - val) < abs(v - tmp->val)){
                 return this;
@@ -151,7 +179,6 @@ AvlTreeNode<T> * AvlTreeNode<T>:: find(int v){
             else{
                 return tmp;
             }
-
         }
         else{
             return this;

@@ -24,11 +24,13 @@ void test4(){
 
 void test5(){
     AVL_tree<int> avls;
-    for(int i=0;i<128;++i){
-        avls.push(3*i,3*-i);
-    }
-    cout<<"find "<< avls.find(125)<<endl;
+    avls.push(0,0);
+    avls.push(9999,9999);
+    avls.push(8888,8888);
+
+    cout<<"find "<< avls.find(100)<<endl;
     cout<<"high "<< avls.high()<<endl;
+    avls.root->debug_prinf();
 }
 
 int main()
