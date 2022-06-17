@@ -5,20 +5,23 @@ class AvlTreeNode
 {
     public:
         AvlTreeNode(int,const T&);
-        AvlTreeNode<T>* push(int,const T&);
+        AvlTreeNode<T>* real_push(int,const T&);
+        AvlTreeNode<T>* push(int,const T&, int);
+        AvlTreeNode<T>* remove(){return this;};
         int high();
         AvlTreeNode<T> * find(int v);
         T &value(){return data;}
         void debug_prinf(){
-            cout<<" v:"<<val<<" H:"<<_high;
+            
+            cout<<" real_idx:"<<real_idx()<<" fake: "<< fake_idx<<" offset:"<<offset << " data:"<<data;
             if(left != nullptr){
-                cout<<" L:"<<left->val;
+                cout<<" L:"<<left->data;
             }
             if(right != nullptr){
-                cout<<" R:"<<right->val;
+                cout<<" R:"<<right->data;
             }
-            if(father){
-                cout<<" F:"<<father->val;
+            if(father != nullptr){
+                cout<<" F:"<<father->data;
             }
             cout<<endl;
             if(left != nullptr){
@@ -30,49 +33,96 @@ class AvlTreeNode
         }
 
     private:
-        int val;
+        int offset;
+        int insert_nb;
+        bool inserted;
+        int fake_idx;
         T data;
         AvlTreeNode<T> *father = nullptr;
         AvlTreeNode<T> *left = nullptr;
         AvlTreeNode<T> *right = nullptr;
 
-    protected:
+        int diff;
         int _high=1;
+
+    protected:
+        
         int left_high();
         int right_high();
-        AvlTreeNode<T> * left_push(int,const T&);
-        AvlTreeNode<T> * right_push(int,const T&);
+        int get_offset();
+        
+        AvlTreeNode<T> * left_push(int,const T&, int);
+        AvlTreeNode<T> * right_push(int,const T&, int);
         AvlTreeNode<T> * rotate_left();
         AvlTreeNode<T> * rotate_right();
         void update_high();
+        
 
+        int real_offset(){
+            int res = offset;
+            if(father == nullptr){
+                return res;
+            }
+            else if(this == father->left){
+                if(father->father != nullptr){
+                    res += father->father->real_offset();
+                }
+            }
+            else{
+                res += father->real_offset();
+            }
+            return res;
+        }
+
+        int real_idx(){
+            return fake_idx + real_offset();
+        }
 };
 
 template <typename T>
-AvlTreeNode<T>::AvlTreeNode(int v,const T& dt):val(v),data(dt){}
+AvlTreeNode<T>::AvlTreeNode(int v,const T& dt):fake_idx(v),data(dt),offset(0),insert_nb(0),inserted(false),diff(0){}
 
 template <typename T>
-AvlTreeNode<T>* AvlTreeNode<T>::push(int v,const T& dt){
+AvlTreeNode<T>* AvlTreeNode<T>::push(int v,const T& dt,int insert){
+    int idx = fake_idx + get_offset();
+    insert_nb += insert;
     AvlTreeNode<T>* res = this;
-    if(v == val){
-        data = dt;
+    if(v == idx){
+        if(insert==0){
+            data = dt;
+        }
+        else if(insert>0){
+            idx += insert;
+        }
+        else{
+            update_high();
+            return remove();
+        }
     }
-    else if (v < val){
-        left  = left_push(v,dt);
-        left->father = this;
+    if (v < idx){
+        left  = left_push(v ,dt, insert);
+        if(left != nullptr)
+            left->father = this;
         if(left_high() - right_high() > 1){
             res =  rotate_left();
         }
     }
     else{
-        right = right_push(v,dt);
-        right->father = this;
+        right = right_push(v - offset ,dt, insert);
+        if(right != nullptr)
+            right->father = this;
         if(right_high() - left_high() > 1){
             res = rotate_right();
         }
     }
     update_high();
     return res;
+}
+
+
+template <typename T>
+AvlTreeNode<T>* AvlTreeNode<T>::real_push(int real_idx,const T& dt){
+    return push(real_idx,dt,1);
 }
 
 template <typename T>
@@ -92,23 +142,55 @@ int AvlTreeNode<T>:: right_high(){
     return right->high();
 }
 
+
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: left_push(int v,const T& bt){
-    if(left == nullptr){
-        return new AvlTreeNode(v,bt);
+int AvlTreeNode<T>:: get_offset(){
+    if(father == nullptr){
+        if(left != nullptr)
+            offset = left->insert_nb;
+    }
+    else if(father->left == this){
+        if(right == nullptr)
+            offset = father->offset;
+        else
+            offset = father->offset - right->insert_nb;
     }
     else{
-        return left->push(v,bt);
+        if(left == nullptr)
+            offset = father->offset;
+        else
+            offset = left->insert_nb + father->offset;
+    }
+    return offset;
+}
+
+
+template <typename T>
+AvlTreeNode<T> * AvlTreeNode<T>:: left_push(int v,const T& bt,int insert){
+    if(left == nullptr){
+        if(insert<0)
+            return nullptr;
+        AvlTreeNode<T> *res = new AvlTreeNode(v,bt);
+        res->insert_nb = insert;
+        res->inserted = true;
+        return res;
+    }
+    else{
+        return left->push(v,bt,insert);
     }
 
 }
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: right_push(int v,const T& bt){
+AvlTreeNode<T> * AvlTreeNode<T>:: right_push(int v,const T& bt,int insert){
     if(right== nullptr){
-        return new AvlTreeNode(v,bt);
+        if(insert<0)
+            return nullptr;
+        AvlTreeNode<T> *res = new AvlTreeNode(v,bt);
+        res->insert_nb = insert;
+        return res;
     }
     else{
-        return right->push(v,bt);
+        return right->push(v,bt,insert);
     }
 }
 template <typename T>
@@ -120,13 +202,15 @@ AvlTreeNode<T> * AvlTreeNode<T>:: rotate_left(){
     new_root->right = this;
     father = new_root;
     new_root->father=nullptr;
+
+
     update_high();
     new_root->update_high();
+    cout<<"rotate_left "<<data<<endl;
     return new_root;
 }
 template <typename T>
 AvlTreeNode<T> * AvlTreeNode<T>:: rotate_right(){
-    
     AvlTreeNode<T> * new_root = right;
     right = new_root->left;
     if(right != nullptr)
@@ -136,6 +220,7 @@ AvlTreeNode<T> * AvlTreeNode<T>:: rotate_right(){
     new_root->father=nullptr;
     update_high();
     new_root->update_high();
+    cout<<"rotate_right new root"<<new_root->data<<endl;
     return new_root;
 }
 
@@ -149,18 +234,29 @@ void AvlTreeNode<T>:: update_high(){
     else{
         _high = hr+1;
     }
+
+    insert_nb = (int)inserted;
+    if(left != nullptr){
+        insert_nb += left->insert_nb;
+    }
+    else if(right != nullptr){
+        insert_nb += right->insert_nb;
+    }
 }
 
 template <typename T>
 AvlTreeNode<T> * AvlTreeNode<T>:: find(int v){
-    if(val == v){
+    int idx = fake_idx + offset;
+    diff = abs(v - idx);
+
+    if(idx == v){
         return this;
     }
-    else if (v < val)
+    else if (v < idx)
     {
         if(left != nullptr){
             AvlTreeNode<T> *tmp = left->find(v);
-            if(abs(v - val) < abs(v - tmp->val)){
+            if(diff < tmp->diff){
                 return this;
             }
             else{
@@ -173,7 +269,7 @@ AvlTreeNode<T> * AvlTreeNode<T>:: find(int v){
     else{
         if(right != nullptr){
             AvlTreeNode<T> *tmp = right->find(v);
-            if(abs(v - val) < abs(v - tmp->val)){
+            if(diff < tmp->diff){
                 return this;
             }
             else{
@@ -191,25 +287,25 @@ template <typename T>
 class AVL_tree{
     public:
         AvlTreeNode<T> *root = nullptr;
-        void push(int,const T&);
+        void push(int,const T&,int);
         T& find(int);
         int high(){return root->high();}
 };
 
 template <typename T>
-void AVL_tree<T>:: push(int val,const T& dt){
+void AVL_tree<T>:: push(int fake_idx,const T& dt,int insert){
     if(root == nullptr){
-        root = new AvlTreeNode<T>(val,dt);
+        root = new AvlTreeNode<T>(fake_idx,dt);
     }
     else{
-        root = root->push(val,dt);
+        root = root->push(fake_idx,dt,insert);
     }
     
 }
 
 template <typename T>
-T& AVL_tree<T>:: find(int val){
-    return root->find(val)->value();
+T& AVL_tree<T>:: find(int fake_idx){
+    return root->find(fake_idx)->value();
 }
 
 
