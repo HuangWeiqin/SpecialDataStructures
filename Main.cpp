@@ -12,12 +12,23 @@ void test(){
     ls.value().debug_print();
 }
 
+template <typename T>
+int IDXAvlTreeNode<T>::cnt = 0;
+
 void test2(){
-    IDXAvlTreeNode<int>* tmp = new IDXAvlTreeNode<int>(100,100);
-    for(int i=1;i<1000;++i){
-        tmp = tmp->insert(i,i);
+    
+    IDXAvlTreeNode<int>* tmp = new IDXAvlTreeNode<int>(0,0);
+    for(int i=1;i<2001;i+=7){
+        tmp = tmp->insert(i%23,i%23);
     }
+    for(int i=1;i<2001;i+=7){
+        tmp = tmp->maintain_balance();
+        cout<< tmp->pop_front()->value()<<endl;
+    }
+    cout<< IDXAvlTreeNode<int>::cnt<<endl;
     tmp->debug_prinf();
+    //cout<< tmp->find(167)->value() <<endl;
+    
 }
 
 int main()
