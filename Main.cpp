@@ -18,16 +18,11 @@ int IDXAvlTreeNode<T>::cnt = 0;
 void test2(){
     
     IDXAvlTreeNode<int>* tmp = new IDXAvlTreeNode<int>(0,0);
-    for(int i=1;i<2001;i+=7){
-        tmp = tmp->insert(i%23,i%23);
+    for(int i=1;i<2000;i+=1){
+        tmp = tmp->insert(i%73,i%73);
     }
-    for(int i=1;i<2001;i+=7){
-        tmp = tmp->maintain_balance();
-        cout<< tmp->pop_front()->value()<<endl;
-    }
+    cout<< tmp->pop_back()->value()<<endl;
     cout<< IDXAvlTreeNode<int>::cnt<<endl;
-    tmp->debug_prinf();
-    //cout<< tmp->find(167)->value() <<endl;
     
 }
 
