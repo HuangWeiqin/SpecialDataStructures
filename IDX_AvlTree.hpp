@@ -8,15 +8,18 @@ class IDXAvlTreeNode
     public:
     
         IDXAvlTreeNode(int id,const T& data):_fake_idx(id),_data(data){}
+        IDXAvlTreeNode(const IDXAvlTreeNode<T> &);
         //IDXAvlTreeNode<T>* emplace(int,const T&);
         //IDXAvlTreeNode<T>* deplace(int);
         IDXAvlTreeNode<T>* insert(int,const T&);
-        IDXAvlTreeNode<T>* pop(int);
+        IDXAvlTreeNode<T>* pop(int,IDXAvlTreeNode<T>*);
         IDXAvlTreeNode<T>* pop_back();
         IDXAvlTreeNode<T>* pop_front();
-        IDXAvlTreeNode<T>* find(int);
+        IDXAvlTreeNode<T>* addressing(int);
+        IDXAvlTreeNode<T>* maintain_balance();
+
+
         T& value(){return _data;}
-        int real_idx(int idxx){return idxx + tmp_diff;}
         static int cnt;  
         void debug_prinf(){
             right_propagation();
@@ -41,13 +44,15 @@ class IDXAvlTreeNode
                 _right->debug_prinf();
             }
         }
-        IDXAvlTreeNode<T>* maintain_balance();
+        
 
     //private:
         T _data;
         IDXAvlTreeNode<T>* _left = nullptr;
         IDXAvlTreeNode<T>* _right = nullptr;
         IDXAvlTreeNode<T>* _father = nullptr;
+        IDXAvlTreeNode<T>* _prev = nullptr;
+        IDXAvlTreeNode<T>* _next = nullptr;
         
         int _high = 1;
         int _fake_idx = 0;
@@ -84,6 +89,10 @@ class IDXAvlTreeNode
 };
 
 template <typename T>
+IDXAvlTreeNode<T>::IDXAvlTreeNode(const IDXAvlTreeNode<T> &other){
+}
+
+template <typename T>
 IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::insert(int new_idx,const T& data){
 
     if(new_idx <= idx()){
@@ -103,15 +112,20 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::insert_left(int new_idx,const T& data){
     if(_left == nullptr){
         _left = new IDXAvlTreeNode(new_idx,data);
         _left->_father = this;
-        return _left;
+        if(_prev != nullptr){
+            _prev->_next = _left;
+            _left->_prev = _prev;
+        }
+        _prev = _left;
+        _prev->_next = this;
     }
     else{
         _left = _left->insert(new_idx , data);
         _left->_father = this;
-        return _left;
+        
     }
+    return _left;
 }
-
 
 template <typename T>
 IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::insert_right(int new_idx,const T& data){
@@ -119,13 +133,18 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::insert_right(int new_idx,const T& data){
         _right_added = 0;
         _right = new IDXAvlTreeNode(new_idx,data);
         _right->_father = this;
-        return _right;
+        if(_next != nullptr){
+            _next->_prev = _right;
+            _right->_next = _next;
+        }
+        _next = _right;
+        _next->_prev = this;
     }
     else{
         _right = _right->insert(new_idx-_right_added, data);
         _right->_father = this;
-        return _right;
     }
+    return _right;
 }
 
 
@@ -208,25 +227,22 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::rotate_right(){
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::find(int id){
-    tmp_diff = idx() - id;
-    IDXAvlTreeNode<T>* res = nullptr;
-    if(id <= idx()){
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::addressing(int id){
+    
+    if(id == idx()){
+        return this;
+    }
+    else if(id < idx()){
         if(_left != nullptr){
-            res = _left->find(id);
+            return _left->addressing(id);
         }
     }
     else{
         if(_right != nullptr){
-            res = _right->find(id - _right_added);
+            return _right->addressing(id - _right_added);
         }
     }
-
-    if(res == nullptr or abs(tmp_diff) <= abs(res->tmp_diff) ){
-        return this;
-    }
-    tmp_diff = res->tmp_diff;
-    return res;
+    return nullptr;
 }
 
 template <typename T>
@@ -286,72 +302,65 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_front(){
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id){
-    IDXAvlTreeNode<T>* res = nullptr;
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id,IDXAvlTreeNode<T>* new_root){
+    IDXAvlTreeNode<T>* result = nullptr;
     if(id < idx()){
         if(_left != nullptr){
             right_advance(-1);
-            res = _left->pop(id);
+            result = _left->pop(id, new_root);
         }
             
     }
     else if(id > idx()){
         if(_right != nullptr){
-            res = _right->pop(id - _right_added);
+            result = _right->pop(id - _right_added, new_root);
         }
     }
     else if(id == idx()){
-        if(_father == nullptr)
-            return this;
+
         _right_added -= 1;
         right_propagation();
 
         if(_left != nullptr){
-            IDXAvlTreeNode<T>* newer = _left->pop_back();
-            
+            new_root = _left->pop_back();
             if(_left != nullptr){
-                _left->_father = newer;
-                newer->_left = _left;
+                _left->_father = new_root;
+                new_root->_left = _left;
             }
 
             if(_right != nullptr){
-                _right->_father = newer;
-                newer->_right = _right;
+                _right->_father = new_root;
+                new_root->_right = _right;
             }
 
-            newer = newer->maintain_balance();
-            newer->_father = _father;
-
-            if(_father->_left == this)
-                _father->_left = newer;
-            else
-                _father->_right = newer;
-
+            new_root = new_root->maintain_balance();
         }
         else if(_right != nullptr){
-            _right->_father = _father;
-            if(_father->_left == this)
-                _father->_left = _right;
-            else
-                _father->_right = _right;
+            new_root = _right;
         }
-        else{
+        new_root->_father = _father;
+        if(_father != nullptr){
             if(_father->_left == this)
-                _father->_left = nullptr;
+                _father->_left = new_root;
             else
-                _father->_right = nullptr;
-            
-        }
+                _father->_right = new_root;
         _father->_high = _father->get_hight();
         _father = nullptr;
+        }
         _left = nullptr;
         _right = nullptr;
-        res = this;
+        if(_prev != nullptr)
+            _prev->_next = _next;
+        if(_next != nullptr)
+            _next->_prev = _prev;
+        result = this;
     }
-    if(res == nullptr)
-        cout<<"???"<<endl;
-    return res;
+
+    return result;
 }
+
+
+
 
 #define IDX_AVL_INCLUDED
 #endif

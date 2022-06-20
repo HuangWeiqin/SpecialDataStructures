@@ -19,10 +19,24 @@ void test2(){
     
     IDXAvlTreeNode<int>* tmp = new IDXAvlTreeNode<int>(0,0);
     for(int i=1;i<2000;i+=1){
-        tmp = tmp->insert(i%73,i%73);
+        tmp = tmp->insert(i,i);
     }
-    cout<< tmp->pop_back()->value()<<endl;
+
+    cout<< IDXAvlTreeNode<int>::cnt <<endl;
+    cout<< tmp->pop(999,tmp)->value()<<endl;
+    cout<< tmp->addressing(999)->value()<<endl;
+    cout<< tmp->pop(99,tmp)->value()<<endl;
+    cout<< tmp->addressing(999)->value()<<endl;
     cout<< IDXAvlTreeNode<int>::cnt<<endl;
+
+    IDXAvlTreeNode<int>* vc = tmp->addressing(56);
+    while (vc)
+    {
+        cout<< vc->value() <<" ";
+        vc = vc->_next;
+    }
+     
+
     
 }
 
