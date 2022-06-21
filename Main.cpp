@@ -1,6 +1,7 @@
 #include <iostream>
 #include "ListNode.hpp"
 #include "IDX_AvlTree.hpp"
+#include <vector>
 
 using namespace std;
 
@@ -40,32 +41,49 @@ void help2(IDXAvlTreeNode<int>* tmp,int it){
 }
 
 
+bool compare_with_vec(vector<int> &vec,IDXAvlTreeNode<int>* tmp){
+    vector<int>::iterator iter = vec.begin();
+    while (tmp != nullptr)
+    {
+        
+        if(*iter != tmp->value()){
+            cout << *iter<<" != "<<tmp->value()<<endl;
+            cout<<" !!!!!!!!!!!!"<<endl;
+            return false;
+        }
+            
+        ++iter;
+        tmp = tmp->_next;
+        //cout << endl;
+    }
+    return true;
+}
+
 void test2(){
     
     IDXAvlTreeNode<int>* tmp = new IDXAvlTreeNode<int>(0,0);
-
-    for(int i=0;i<2000;i+=1){
+    vector<int> vec;
+    vec.push_back(0);
+    for(int i=1;i<200000;i+=1){
         tmp = tmp->insert(i,i);
+        vec.push_back(i);
     }
-    
-    for(int i=0;i<=500;++i){
-        auto res = tmp->pop(i,tmp);
-        if(res)
-            cout<<'<'<<i<<'>'<< res->value()<<" -> ";
-        help(tmp,i);
+
+    for(int i=0;i<100000;i+=1){
+        tmp = tmp->insert(1 + i%130000,i%10);
+        auto res = tmp->pop( 1+(3*i)%130000,tmp);
         delete res;
+        auto res2 = tmp->addressing(1+ (7*i)%130000);
+        if(res2 != nullptr)
+            cout <<"fucker"<<res2->value()<<endl;
+
+        //vec.insert(vec.begin() + 1 + i%130000,i%10);
+        //vec.erase(vec.begin() +1+ (3*i)%130000);
+        //vec[1+ (7*i)%130000];
     }
-    help2(tmp->addressing(109),10);
 
-
-    //tmp->addressing(10)->debug_prinf();
-    //cout<<"!!!!!!"<< tmp->pop(0,tmp)->value()<<endl;
-    //tmp->debug_prinf();
-    //cout<< tmp->addressing(993)->value()<<endl;
-    //cout<< tmp->pop(99,tmp)->value()<<endl;
-    //cout<< tmp->addressing(999)->value()<<endl;
     cout<< IDXAvlTreeNode<int>::cnt<<endl;
-    
+    cout<< tmp->_high <<endl;
      
 }
 

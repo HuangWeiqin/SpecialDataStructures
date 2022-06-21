@@ -237,10 +237,10 @@ void IDXAvlTreeNode<T>::replace_by(IDXAvlTreeNode<T>* other){
 template <typename T>
 IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::maintain_balance(){
     int high_diff = get_left_hight() - get_right_hight();
-    if(high_diff > 1){
+    if(high_diff >= 3){
         return rotate_left();
     }
-    else if (high_diff < -1){
+    else if (high_diff <= -3){
         return rotate_right();
     }
     _high = get_hight();
