@@ -190,6 +190,12 @@ void IDXAvlTreeNode<T>::link_next_prev(){
 
 template <typename T>
 void IDXAvlTreeNode<T>::replace_by(IDXAvlTreeNode<T>* other){
+    other->_father = nullptr;
+    other->_left = nullptr;
+    other->_right = nullptr;
+    other->_next = nullptr;
+    other->_prev = nullptr;
+
     if(_father != nullptr){
         if(_father->_left == this){
             _father->_left = other;
@@ -363,6 +369,7 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(){
                 _father->_right = nullptr;
             _father = nullptr;
         }
+        link_next_prev();
         return nullptr;
     }
     else if (_left != nullptr)
@@ -371,7 +378,6 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(){
         if(_left != nullptr)
             _left->_father = this;
         replace_by(new_root);
-
         return new_root->maintain_balance();
     }
     else{
@@ -380,7 +386,6 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(){
             _right->_father = this;
         new_root->_fake_idx += _right_added;
         replace_by(new_root);
-
         return new_root->maintain_balance();
     }
 }
