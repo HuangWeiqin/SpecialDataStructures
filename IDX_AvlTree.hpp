@@ -12,11 +12,14 @@ class IDXAvlTreeNode
         //IDXAvlTreeNode<T>* emplace(int,const T&);
         //IDXAvlTreeNode<T>* deplace(int);
         IDXAvlTreeNode<T>* insert(int,const T&);
-        IDXAvlTreeNode<T>* pop(int,IDXAvlTreeNode<T>*);
-        IDXAvlTreeNode<T>* pop_back();
-        IDXAvlTreeNode<T>* pop_front();
+        IDXAvlTreeNode<T>* pop(int,IDXAvlTreeNode<T> *&);
+        IDXAvlTreeNode<T>* pop();
+        IDXAvlTreeNode<T>* pop_back(IDXAvlTreeNode<T> *&);
+        IDXAvlTreeNode<T>* pop_front(IDXAvlTreeNode<T> *&);
         IDXAvlTreeNode<T>* addressing(int);
         IDXAvlTreeNode<T>* maintain_balance();
+        void link_next_prev();
+        void replace_by(IDXAvlTreeNode<T>*);
 
 
         T& value(){return _data;}
@@ -168,10 +171,61 @@ void IDXAvlTreeNode<T>::right_propagation(){
             node = node->_left;
             ++cnt;
         }
-        
     }
     
     _right_added = 0;
+}
+
+template <typename T>
+void IDXAvlTreeNode<T>::link_next_prev(){
+    if(_prev != nullptr){
+        _prev->_next = _next;
+    }
+    if(_next != nullptr){
+        _next->_prev = _prev;
+    }
+    _prev = nullptr;
+    _next = nullptr;
+}
+
+template <typename T>
+void IDXAvlTreeNode<T>::replace_by(IDXAvlTreeNode<T>* other){
+    if(_father != nullptr){
+        if(_father->_left == this){
+            _father->_left = other;
+        }
+        else{
+            _father->_right = other;
+        }
+        other->_father = _father;
+        _father = nullptr;
+    }
+
+    if(_left != nullptr){
+        _left->_father = other;
+        other->_left = _left;
+        _left = nullptr;
+    }
+
+    if(_right != nullptr){
+        _right->_father = other;
+        other->_right = _right;
+        _right = nullptr;
+    }
+
+    if(_prev != nullptr){
+        _prev->_next = other;
+        other->_prev = _prev;
+        _prev = nullptr;
+    }
+
+    if(_next != nullptr){
+        _next->_prev = other;
+        other->_next = _next;
+        _next = nullptr;
+    }
+    
+    other->_right_added = _right_added;
 }
 
 template <typename T>
@@ -246,117 +300,118 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::addressing(int id){
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_back(){
-    //attention 这个地方没有保障树高度的正确性，之后修复
-    if(_father == nullptr && _right == nullptr)
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_back(IDXAvlTreeNode<T> *&root){
+    if(_right == nullptr && _left == nullptr){
+        _father = nullptr;
+        root = nullptr;
+        link_next_prev();
+        _right_added = 0;
         return this;
-
-    IDXAvlTreeNode<T>* res = this;
-    res->right_propagation();
-    while (res->_right != nullptr){
-        res = res->_right;
-        res->right_propagation();
     }
-
-    if(res->_father->_left == res)
-        res->_father->_left = res->_left;
-    else
-        res->_father->_right = res->_left;
-
-    if(res->_left != nullptr){
-        res->_left->_father = res->_father;
+    else if(_right == nullptr){
+        root = _left;
+        root->_father = nullptr;
+        link_next_prev();
+        _right_added = 0;
+        return this;
     }
-    res-> _father->_high = res->_father->get_hight();
-    res->_father = nullptr;
-    res->_left = nullptr;
-    return res;
+    else{
+        IDXAvlTreeNode<T>* res = _right->pop_back(_right);
+        if(_right != nullptr)
+            _right->_father = this;
+        res->_fake_idx +=  _right_added;
+        root = maintain_balance();
+        return res;
+    }
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_front(){
-    if(_father == nullptr && _left == nullptr)
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_front(IDXAvlTreeNode<T> *&root){
+    if(_right == nullptr && _left == nullptr){
+        _father = nullptr;
+        root = nullptr;
+        link_next_prev();
         return this;
-
-    IDXAvlTreeNode<T>* res = this;
-    res->right_advance(-1);
-    while (res->_left != nullptr){
-        res = res->_left;
-        res->right_advance(-1);
     }
-
-    res->right_propagation();
-
-    if(res->_father->_left == res)
-        res->_father->_left = res->_right;
-    else
-        res->_father->_right = res->_right;
-        
-    if(res->_right != nullptr){
-        res->_right->_father = res->_father;
-    }
-    res-> _father->_high = res->_father->get_hight();
-    res->_father = nullptr;
-    res->_right = nullptr;
-    return res;
-
-}
-
-template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id,IDXAvlTreeNode<T>* new_root){
-    IDXAvlTreeNode<T>* result = nullptr;
-    if(id < idx()){
-        if(_left != nullptr){
-            right_advance(-1);
-            result = _left->pop(id, new_root);
-        }
-            
-    }
-    else if(id > idx()){
-        if(_right != nullptr){
-            result = _right->pop(id - _right_added, new_root);
-        }
-    }
-    else if(id == idx()){
-
+    else if(_left == nullptr){
+        root = _right;
+        root->_father = nullptr;
         _right_added -= 1;
         right_propagation();
+        link_next_prev();
+        return this;
+    }
+    else{
+        _right_added -= 1;
+        IDXAvlTreeNode<T>* res = _left->pop_front(_left);
+        if(_left != nullptr)
+            _left->_father = this;
+        root = maintain_balance();
+        return res;
+    }
+}
 
-        if(_left != nullptr){
-            new_root = _left->pop_back();
-            if(_left != nullptr){
-                _left->_father = new_root;
-                new_root->_left = _left;
-            }
-
-            if(_right != nullptr){
-                _right->_father = new_root;
-                new_root->_right = _right;
-            }
-
-            new_root = new_root->maintain_balance();
-        }
-        else if(_right != nullptr){
-            new_root = _right;
-        }
-        new_root->_father = _father;
+template <typename T>
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(){
+    right_advance(-1);
+    //right_propagation();
+    if(_left == nullptr && _right == nullptr){
         if(_father != nullptr){
             if(_father->_left == this)
-                _father->_left = new_root;
+                _father->_left = nullptr;
             else
-                _father->_right = new_root;
-        _father->_high = _father->get_hight();
-        _father = nullptr;
+                _father->_right = nullptr;
+            _father = nullptr;
         }
-        _left = nullptr;
-        _right = nullptr;
-        if(_prev != nullptr)
-            _prev->_next = _next;
-        if(_next != nullptr)
-            _next->_prev = _prev;
-        result = this;
+        return nullptr;
     }
+    else if (_left != nullptr)
+    {
+        IDXAvlTreeNode<T>* new_root = _left->pop_back(_left);
+        if(_left != nullptr)
+            _left->_father = this;
+        replace_by(new_root);
 
-    return result;
+        return new_root->maintain_balance();
+    }
+    else{
+        IDXAvlTreeNode<T>* new_root = _right->pop_front(_right);
+        if(_right != nullptr)
+            _right->_father = this;
+        new_root->_fake_idx += _right_added;
+        replace_by(new_root);
+
+        return new_root->maintain_balance();
+    }
+}
+
+template <typename T>
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id,IDXAvlTreeNode<T>* &new_root){
+    if(id == idx()){
+        new_root = pop();
+        return this;
+    }
+    else if(id < idx()){
+        if(_left != nullptr){
+            right_advance(-1);
+            IDXAvlTreeNode<T>* res = _left->pop(id , _left);
+            if(_left != nullptr)
+                _left->_father = this;
+            new_root = maintain_balance();
+            return res;
+        }
+    }
+    else{
+        if(_right != nullptr){
+            IDXAvlTreeNode<T>* res = _right->pop(id - _right_added , _right);
+            if(_right != nullptr)
+                _right->_father = this;
+            new_root = maintain_balance();
+            return res;
+        }
+    }
+    new_root = this;
+    return nullptr;
 }
 
 
