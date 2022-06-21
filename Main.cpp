@@ -18,26 +18,32 @@ int IDXAvlTreeNode<T>::cnt = 0;
 void test2(){
     
     IDXAvlTreeNode<int>* tmp = new IDXAvlTreeNode<int>(0,0);
-    for(int i=1;i<2000;i+=1){
+    IDXAvlTreeNode<int>* st = tmp;
+    for(int i=1;i<=6;i+=1){
         tmp = tmp->insert(i,i);
     }
-
-    cout<< IDXAvlTreeNode<int>::cnt <<endl;
-    cout<< tmp->pop(999,tmp)->value()<<endl;
-    cout<< tmp->addressing(999)->value()<<endl;
-    cout<< tmp->pop(99,tmp)->value()<<endl;
-    cout<< tmp->addressing(999)->value()<<endl;
-    cout<< IDXAvlTreeNode<int>::cnt<<endl;
-
-    IDXAvlTreeNode<int>* vc = tmp->addressing(56);
-    while (vc)
-    {
-        cout<< vc->value() <<" ";
-        vc = vc->_next;
-    }
-     
+    //tmp->addressing(96)->debug_prinf();
+    //cout<< IDXAvlTreeNode<int>::cnt <<endl;
+    //cout<< tmp->pop(999,tmp)->value()<<endl;
+    //cout<< tmp->addressing(999)->value()<<endl;
+    cout<< tmp->pop_front(tmp)->value()<<endl;
+    cout << "fucker!!!"<<endl;
+    cout<< tmp->pop_front(tmp)->value()<<endl;
+    cout<< tmp->pop_front(tmp)->value()<<endl;
+    cout<< tmp->pop_front(tmp)->value()<<endl;
+    cout<< tmp->pop_front(tmp)->value()<<endl;
+    //cout<< tmp->addressing(999)->value()<<endl;
+    //cout<< IDXAvlTreeNode<int>::cnt<<endl;
 
     
+    tmp->debug_prinf();
+    //IDXAvlTreeNode<int>* kd = new IDXAvlTreeNode<int>(*tmp);
+
+    //tmp->addressing()->debug_prinf();
+
+    
+    
+    //tmp->debug_prinf();
 }
 
 int main()

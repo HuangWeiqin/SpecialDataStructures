@@ -1,22 +1,29 @@
 #ifndef IDX_AVL_INCLUDED
 #include <iostream>
+#include <unordered_map>
 #define MINIMUM -99999
 #define MAXIMUM 99999
+
 template <typename T>
 class IDXAvlTreeNode
 {   
     public:
     
         IDXAvlTreeNode(int id,const T& data):_fake_idx(id),_data(data){}
-        IDXAvlTreeNode(const IDXAvlTreeNode<T> &);
+        IDXAvlTreeNode(IDXAvlTreeNode<T> &);
         //IDXAvlTreeNode<T>* emplace(int,const T&);
         //IDXAvlTreeNode<T>* deplace(int);
         IDXAvlTreeNode<T>* insert(int,const T&);
-        IDXAvlTreeNode<T>* pop(int,IDXAvlTreeNode<T>*);
-        IDXAvlTreeNode<T>* pop_back();
-        IDXAvlTreeNode<T>* pop_front();
+        IDXAvlTreeNode<T>* pop(int,IDXAvlTreeNode<T>* &);
+        IDXAvlTreeNode<T>* pop_back(IDXAvlTreeNode<T>* &);
+        IDXAvlTreeNode<T>* pop_front(IDXAvlTreeNode<T>* &);
+        IDXAvlTreeNode<T>* begin();
+        IDXAvlTreeNode<T>* end();
         IDXAvlTreeNode<T>* addressing(int);
         IDXAvlTreeNode<T>* maintain_balance();
+        void link_prev_next();
+        IDXAvlTreeNode<T>* pop_self(IDXAvlTreeNode<T>* &);
+        void replace_self(IDXAvlTreeNode<T>*);
 
 
         T& value(){return _data;}
@@ -89,7 +96,47 @@ class IDXAvlTreeNode
 };
 
 template <typename T>
-IDXAvlTreeNode<T>::IDXAvlTreeNode(const IDXAvlTreeNode<T> &other){
+IDXAvlTreeNode<T>::IDXAvlTreeNode(IDXAvlTreeNode<T> &other):IDXAvlTreeNode(other._fake_idx,other._data){
+    unordered_map<int,IDXAvlTreeNode<T>*> tmp_dic;
+    IDXAvlTreeNode<T>* start = other.begin();
+    
+    IDXAvlTreeNode<T>* cur = start->_next;
+    
+    IDXAvlTreeNode<T>* prev_node = start;
+
+    if(start == &other)
+        prev_node = this;
+    else
+        prev_node = new IDXAvlTreeNode<T>(start->_fake_idx,start->_data);
+    tmp_dic[prev_node->_fake_idx] = prev_node;
+    start->right_propagation();
+    while (cur != nullptr){
+        IDXAvlTreeNode<T>* tmp_build = nullptr;
+        if(cur == &other)
+            tmp_build = this;
+        else
+            tmp_build = new IDXAvlTreeNode<T>(cur->_fake_idx,cur->_data);
+
+        prev_node->_next = tmp_build;
+        tmp_build->_prev = prev_node;
+        tmp_dic[cur->_fake_idx] = tmp_build;
+        cur->right_propagation();
+        prev_node = tmp_build;
+        cur = cur->_next;
+    }
+
+    cur = start;
+    while (cur != nullptr){
+        IDXAvlTreeNode<T>* tmp_build = tmp_dic[cur->_fake_idx];
+        if(cur->_father != nullptr)
+            tmp_build->_father = tmp_dic[cur->_father->_fake_idx];
+        if(cur->_right != nullptr)
+            tmp_build->_right = tmp_dic[cur->_right->_fake_idx];
+        if(cur->_left != nullptr)
+            tmp_build->_left = tmp_dic[cur->_left->_fake_idx];
+        cur = cur->_next;
+    }
+
 }
 
 template <typename T>
@@ -147,6 +194,24 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::insert_right(int new_idx,const T& data){
     return _right;
 }
 
+template <typename T>
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::begin(){
+    IDXAvlTreeNode<T>* res= this;
+    while (res->_prev != nullptr){
+        res = res->_prev;
+    }
+    return res;
+}
+
+template <typename T>
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::end(){
+    IDXAvlTreeNode<T>* res= this;
+    while (res->_next != nullptr){
+        res = res->_next;
+    }
+    return res;
+}
+
 
 template <typename T>
 void IDXAvlTreeNode<T>::right_advance(int i){
@@ -165,6 +230,7 @@ void IDXAvlTreeNode<T>::right_propagation(){
             node->_fake_idx += _right_added;
             if(node->_right != nullptr)
                 node->_right_added += _right_added;
+            
             node = node->_left;
             ++cnt;
         }
@@ -246,18 +312,57 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::addressing(int id){
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_back(){
-    //attention 这个地方没有保障树高度的正确性，之后修复
-    if(_father == nullptr && _right == nullptr)
-        return this;
+void IDXAvlTreeNode<T>::link_prev_next(){
+    if(_prev != nullptr){
+       _prev->_next = _next;
+       _prev = nullptr;
+    }
+    if(_next != nullptr){
+       _next->_prev = _prev;
+       _next = nullptr;
+    }
+}
 
+template <typename T>
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_self(IDXAvlTreeNode<T>* &root){
+    if(_left != nullptr){
+        root = _prev;
+        replace_self(_prev->pop_self());
+    }
+    else if(_right != nullptr){
+        root = _next;
+
+    }
+}
+
+template <typename T>
+void IDXAvlTreeNode<T>::replace_self(IDXAvlTreeNode<T>*other){
+    
+}
+
+template <typename T>
+void IDXAvlTreeNode<T>::link_prev_next(){}
+
+template <typename T>
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_back(IDXAvlTreeNode<T>*&root){
+    //attention 这个地方没有保障树高度的正确性，之后修复
+    if(_right == nullptr){
+        root = _left;
+        _father = nullptr;
+        _left = nullptr;
+        _right = nullptr;
+        link_prev_next();
+        return this;
+    }
+        
     IDXAvlTreeNode<T>* res = this;
     res->right_propagation();
+    
     while (res->_right != nullptr){
         res = res->_right;
         res->right_propagation();
     }
-
+    
     if(res->_father->_left == res)
         res->_father->_left = res->_left;
     else
@@ -269,14 +374,24 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_back(){
     res-> _father->_high = res->_father->get_hight();
     res->_father = nullptr;
     res->_left = nullptr;
+
+    root = this;
+    res->link_prev_next();
     return res;
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_front(){
-    if(_father == nullptr && _left == nullptr)
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_front(IDXAvlTreeNode<T>*&root){
+    if(_left == nullptr){
+        root = _right;
+        _father = nullptr;
+        _left = nullptr;
+        _right = nullptr;
+        link_prev_next();
         return this;
-
+    }
+        
+    
     IDXAvlTreeNode<T>* res = this;
     res->right_advance(-1);
     while (res->_left != nullptr){
@@ -297,66 +412,14 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop_front(){
     res-> _father->_high = res->_father->get_hight();
     res->_father = nullptr;
     res->_right = nullptr;
-    return res;
 
+    root = this;
+    return res;
 }
 
 template <typename T>
-IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id,IDXAvlTreeNode<T>* new_root){
-    IDXAvlTreeNode<T>* result = nullptr;
-    if(id < idx()){
-        if(_left != nullptr){
-            right_advance(-1);
-            result = _left->pop(id, new_root);
-        }
-            
-    }
-    else if(id > idx()){
-        if(_right != nullptr){
-            result = _right->pop(id - _right_added, new_root);
-        }
-    }
-    else if(id == idx()){
-
-        _right_added -= 1;
-        right_propagation();
-
-        if(_left != nullptr){
-            new_root = _left->pop_back();
-            if(_left != nullptr){
-                _left->_father = new_root;
-                new_root->_left = _left;
-            }
-
-            if(_right != nullptr){
-                _right->_father = new_root;
-                new_root->_right = _right;
-            }
-
-            new_root = new_root->maintain_balance();
-        }
-        else if(_right != nullptr){
-            new_root = _right;
-        }
-        new_root->_father = _father;
-        if(_father != nullptr){
-            if(_father->_left == this)
-                _father->_left = new_root;
-            else
-                _father->_right = new_root;
-        _father->_high = _father->get_hight();
-        _father = nullptr;
-        }
-        _left = nullptr;
-        _right = nullptr;
-        if(_prev != nullptr)
-            _prev->_next = _next;
-        if(_next != nullptr)
-            _next->_prev = _prev;
-        result = this;
-    }
-
-    return result;
+IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id,IDXAvlTreeNode<T>* &root){
+    
 }
 
 
