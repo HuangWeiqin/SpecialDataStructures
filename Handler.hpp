@@ -1,4 +1,6 @@
 #ifndef HANDLER_INCLUDED
+#include <iostream>
+using namespace std;
 template <typename T>
 class Handler{
     public:
@@ -8,23 +10,20 @@ class Handler{
         virtual Handler<T>& operator=(const Handler<T>&);
         virtual Handler<T>& share_from(const Handler<T>&);
         virtual ~Handler();
-        int *count = nullptr;
-    private:
+    protected:
         void inc();
         void dec();
         T *data = nullptr;
-        
+        int *count = nullptr;
     protected:
-        const T& value() const {return *data;}
-        void set_value(const T& dt){writing(),*data = dt;}
-        int share_count(){return *count;}
         virtual void writing();
-        virtual void copy_data(){data = new T();};
+        virtual void copy_data(){data = new T(*data);};
     
 };
 
 template <typename T>
-Handler<T>::Handler():data(new T()),count(new int(1)){}
+Handler<T>::Handler():data(new T()),count(new int(1))
+{}
 
 template <typename T>
 Handler<T>::Handler(const Handler<T>& other):count(other.count){
@@ -75,6 +74,7 @@ void Handler<T>::writing(){
         dec();
         count = new int(1);
     }
+    
 }
 
 #define HANDLER_INCLUDED
