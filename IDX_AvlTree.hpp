@@ -1,5 +1,6 @@
 #ifndef IDX_AVL_INCLUDED
 #include <iostream>
+#include "Handler.hpp"
 #define MINIMUM -99999
 #define MAXIMUM 99999
 template <typename T>
@@ -18,10 +19,7 @@ class IDXAvlTreeNode
         IDXAvlTreeNode<T>* pop_front(IDXAvlTreeNode<T> *&);
         IDXAvlTreeNode<T>* addressing(int);
         IDXAvlTreeNode<T>* maintain_balance();
-        void link_next_prev();
-        void replace_by(IDXAvlTreeNode<T>*);
-
-
+        
         T& value(){return _data;}
         static int cnt;  
         void debug_prinf(){
@@ -68,7 +66,8 @@ class IDXAvlTreeNode
         void right_advance(int);
         IDXAvlTreeNode<T>* insert_left(int,const T&);
         IDXAvlTreeNode<T>* insert_right(int,const T&);
-        void replace(IDXAvlTreeNode<T>*,IDXAvlTreeNode<T>*);
+        void link_next_prev();
+        void replace_by(IDXAvlTreeNode<T>*);
     protected:
         int tmp_diff = 0;
         int idx(){return _fake_idx;}
@@ -419,7 +418,17 @@ IDXAvlTreeNode<T>* IDXAvlTreeNode<T>::pop(int id,IDXAvlTreeNode<T>* &new_root){
     return nullptr;
 }
 
-
+template <typename T>
+class TreeVector:public Handler<IDXAvlTreeNode<T>>{
+    public:
+        T addresing(int);
+        void push_back(int);
+        void push_front(int);
+        void insert(int,T&);
+        void pop(int);
+    private:
+        int size();
+};
 
 
 #define IDX_AVL_INCLUDED
