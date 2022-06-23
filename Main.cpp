@@ -15,22 +15,17 @@ void test2(){
         tv.insert(i,i);
     }
 
-    for(int i = 0;i<23456;++i){
+    for(int i = 0;i<1190;++i){
         tv.insert((i*17)%23,i);
     }
 
-    for(int i = 0;i<2345;++i){
+    for(int i = 0;i<234;++i){
         tv.pop((i*17)%23);
     }
 
     cout << tv.size()<<" ";
     
     IndexTree<int> tvd(tv);
-    tv.insert(3,45);
-    for(int i=0;i<903;++i){
-        cout<<tv.addressing(i)<<' '<<tvd.addressing(i)<<endl;
-    }
-    
 }
 
 int main()
