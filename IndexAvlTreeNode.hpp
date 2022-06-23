@@ -2,6 +2,8 @@
 #include <iostream>
 using namespace std;
 template <typename T>
+class IndexTree;
+template <typename T>
 class IndexAvlTreeNode
 {
     public:
@@ -13,17 +15,17 @@ class IndexAvlTreeNode
         T value(){return data;}
     protected:
         T data;
+        int high = 0;
         int nb_node = 1;
         IndexAvlTreeNode<T> *father = nullptr;
         IndexAvlTreeNode<T> *left = nullptr;
         IndexAvlTreeNode<T> *right = nullptr;
         IndexAvlTreeNode<T> *prev = nullptr;
         IndexAvlTreeNode<T> *next = nullptr;
-        int high = 0;
         
         int left_high();
         int right_high();
-        int idx();
+        int idx() const;
         
         void insert_left(int,const T&);
         void insert_right(int,const T&);
@@ -43,21 +45,16 @@ class IndexAvlTreeNode
         IndexAvlTreeNode<T> * right_extrema();
         IndexAvlTreeNode<T> * pop_back(IndexAvlTreeNode<T> *&);
         IndexAvlTreeNode<T> * pop_front(IndexAvlTreeNode<T> *&);
+
+    private:
+        friend class IndexTree<T>;
 };
 
 template <typename T>
 IndexAvlTreeNode<T>::IndexAvlTreeNode(const IndexAvlTreeNode& other):
 data(other.data),
 nb_node(other.nb_node),
-high(other.high){
-    if(nb_node == 1)
-        return;
-    IndexAvlTreeNode<T> *ptr_array[nb_node];
-    IndexAvlTreeNode<T> * cur = left_extrema();
-    for()
-
-    
-}
+high(other.high){}
 
 template <typename T>
 IndexAvlTreeNode<T> * IndexAvlTreeNode<T>::pop_back(IndexAvlTreeNode<T> *& root){
@@ -259,7 +256,7 @@ int IndexAvlTreeNode<T>:: right_high(){
 }
 
 template <typename T>
-int IndexAvlTreeNode<T>:: idx(){
+int IndexAvlTreeNode<T>:: idx() const{
     if(left == nullptr)
         return 0;
     return left->nb_node;
@@ -283,7 +280,7 @@ IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: addressing(int id){
 
 template <typename T>
 IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: pop(int id,IndexAvlTreeNode<T> *&root){
-    nb_node -= 1;
+    //nb_node -= 1;
     if(id == idx()){
         root = pop_self();
         return this;
