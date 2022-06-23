@@ -2,22 +2,22 @@
 #include <iostream>
 using namespace std;
 template <typename T>
-class AvlTreeNode
+class IndexAvlTreeNode
 {
     public:
-        AvlTreeNode(const T&dt):data(dt){};
-        AvlTreeNode<T>* insert(int,const T&);
-        AvlTreeNode<T>* pop(int,AvlTreeNode<T> *&);
-        AvlTreeNode<T>* addressing(int);
+        IndexAvlTreeNode(const T&dt):data(dt){};
+        IndexAvlTreeNode<T>* insert(int,const T&);
+        IndexAvlTreeNode<T>* pop(int,IndexAvlTreeNode<T> *&);
+        IndexAvlTreeNode<T>* addressing(int);
         T &value(){return data;}
     protected:
         T data;
         int nb_node = 1;
-        AvlTreeNode<T> *father = nullptr;
-        AvlTreeNode<T> *left = nullptr;
-        AvlTreeNode<T> *right = nullptr;
-        AvlTreeNode<T> *prev = nullptr;
-        AvlTreeNode<T> *next = nullptr;
+        IndexAvlTreeNode<T> *father = nullptr;
+        IndexAvlTreeNode<T> *left = nullptr;
+        IndexAvlTreeNode<T> *right = nullptr;
+        IndexAvlTreeNode<T> *prev = nullptr;
+        IndexAvlTreeNode<T> *next = nullptr;
         int high = 0;
         
         int left_high();
@@ -26,26 +26,26 @@ class AvlTreeNode
         
         void insert_left(int,const T&);
         void insert_right(int,const T&);
-        AvlTreeNode<T> * rotate_left();
-        AvlTreeNode<T> * rotate_right();
-        AvlTreeNode<T> * maintain_balance();
+        IndexAvlTreeNode<T> * rotate_left();
+        IndexAvlTreeNode<T> * rotate_right();
+        IndexAvlTreeNode<T> * maintain_balance();
 
         void link_prev_next();
-        void link_left(AvlTreeNode<T> *);
-        void link_right(AvlTreeNode<T> *);
+        void link_left(IndexAvlTreeNode<T> *);
+        void link_right(IndexAvlTreeNode<T> *);
         void update_high();
         void update_nb();
         
-        void replace_self_by(AvlTreeNode<T> *);
-        AvlTreeNode<T> * pop_self();
-        AvlTreeNode<T> * left_extrema();
-        AvlTreeNode<T> * right_extrema();
-        AvlTreeNode<T> * pop_back(AvlTreeNode<T> *&);
-        AvlTreeNode<T> * pop_front(AvlTreeNode<T> *&);
+        void replace_self_by(IndexAvlTreeNode<T> *);
+        IndexAvlTreeNode<T> * pop_self();
+        IndexAvlTreeNode<T> * left_extrema();
+        IndexAvlTreeNode<T> * right_extrema();
+        IndexAvlTreeNode<T> * pop_back(IndexAvlTreeNode<T> *&);
+        IndexAvlTreeNode<T> * pop_front(IndexAvlTreeNode<T> *&);
 };
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>::pop_back(AvlTreeNode<T> *& root){
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>::pop_back(IndexAvlTreeNode<T> *& root){
     if(left == nullptr && right == nullptr){
         father = nullptr;
         root = nullptr;
@@ -61,7 +61,7 @@ AvlTreeNode<T> * AvlTreeNode<T>::pop_back(AvlTreeNode<T> *& root){
         return this;
     }
     else{
-        AvlTreeNode<T> * res = right->pop_back(right);
+        IndexAvlTreeNode<T> * res = right->pop_back(right);
         if(right != nullptr){
             right->father = this;
         }
@@ -72,7 +72,7 @@ AvlTreeNode<T> * AvlTreeNode<T>::pop_back(AvlTreeNode<T> *& root){
 
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>::pop_front(AvlTreeNode<T> *& root){
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>::pop_front(IndexAvlTreeNode<T> *& root){
     if(left == nullptr && right == nullptr){
         father = nullptr;
         root = nullptr;
@@ -88,7 +88,7 @@ AvlTreeNode<T> * AvlTreeNode<T>::pop_front(AvlTreeNode<T> *& root){
         return this;
     }
     else{
-        AvlTreeNode<T> * res = left->pop_front(left);
+        IndexAvlTreeNode<T> * res = left->pop_front(left);
         if(left != nullptr){
             left->father = this;
         }
@@ -99,14 +99,14 @@ AvlTreeNode<T> * AvlTreeNode<T>::pop_front(AvlTreeNode<T> *& root){
 
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: pop_self(){
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: pop_self(){
     if(left == nullptr && right == nullptr){
         link_prev_next();
         replace_self_by(nullptr);
         return nullptr;
     }
     else if (left != nullptr){
-        AvlTreeNode<T>* new_root = left->pop_back(left);
+        IndexAvlTreeNode<T>* new_root = left->pop_back(left);
         if(left != nullptr){
             left->father = this;
         }
@@ -114,7 +114,7 @@ AvlTreeNode<T> * AvlTreeNode<T>:: pop_self(){
         return new_root->maintain_balance();
     }
     else{
-        AvlTreeNode<T>* new_root = right->pop_front(right);
+        IndexAvlTreeNode<T>* new_root = right->pop_front(right);
         if(right != nullptr){
             right->father = this;
         }
@@ -124,7 +124,7 @@ AvlTreeNode<T> * AvlTreeNode<T>:: pop_self(){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: replace_self_by(AvlTreeNode<T> *other){
+void IndexAvlTreeNode<T>:: replace_self_by(IndexAvlTreeNode<T> *other){
     if(other != nullptr){
         other->father = father;
         other->left = left;
@@ -165,8 +165,8 @@ void AvlTreeNode<T>:: replace_self_by(AvlTreeNode<T> *other){
 }
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>::left_extrema(){
-    AvlTreeNode<T> * res = this;
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>::left_extrema(){
+    IndexAvlTreeNode<T> * res = this;
     while (res->left != nullptr){
         res = res->left;
     }
@@ -174,8 +174,8 @@ AvlTreeNode<T> * AvlTreeNode<T>::left_extrema(){
 }
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>::right_extrema(){
-    AvlTreeNode<T> * res = this;
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>::right_extrema(){
+    IndexAvlTreeNode<T> * res = this;
     while (res->right != nullptr){
         res = res->right;
     }
@@ -183,7 +183,7 @@ AvlTreeNode<T> * AvlTreeNode<T>::right_extrema(){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: link_prev_next(){
+void IndexAvlTreeNode<T>:: link_prev_next(){
     if(prev != nullptr){
         prev->next = next;
     }
@@ -195,7 +195,7 @@ void AvlTreeNode<T>:: link_prev_next(){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: link_left(AvlTreeNode<T> * newer){
+void IndexAvlTreeNode<T>:: link_left(IndexAvlTreeNode<T> * newer){
     if(prev != nullptr){
         prev->next = newer;
         newer->prev = prev;
@@ -205,7 +205,7 @@ void AvlTreeNode<T>:: link_left(AvlTreeNode<T> * newer){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: link_right(AvlTreeNode<T> * newer){
+void IndexAvlTreeNode<T>:: link_right(IndexAvlTreeNode<T> * newer){
     if(next != nullptr){
         next->prev = newer;
         newer->next = next;
@@ -215,7 +215,7 @@ void AvlTreeNode<T>:: link_right(AvlTreeNode<T> * newer){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: update_nb(){
+void IndexAvlTreeNode<T>:: update_nb(){
     nb_node = 1;
     if(left != nullptr){
         nb_node += left->nb_node;
@@ -226,32 +226,32 @@ void AvlTreeNode<T>:: update_nb(){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: update_high(){
+void IndexAvlTreeNode<T>:: update_high(){
     high = max(left_high(),right_high()) + 1;
 }
 
 template <typename T>
-int AvlTreeNode<T>:: left_high(){
+int IndexAvlTreeNode<T>:: left_high(){
     if(left == nullptr)
         return 0;
     return left->high;
 }
 template <typename T>
-int AvlTreeNode<T>:: right_high(){
+int IndexAvlTreeNode<T>:: right_high(){
     if(right == nullptr)
         return 0;
     return right->high;
 }
 
 template <typename T>
-int AvlTreeNode<T>:: idx(){
+int IndexAvlTreeNode<T>:: idx(){
     if(left == nullptr)
         return 0;
     return left->nb_node;
 }
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: addressing(int id){
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: addressing(int id){
     if(id == idx()){
         return this;
     }
@@ -267,21 +267,21 @@ AvlTreeNode<T> * AvlTreeNode<T>:: addressing(int id){
 }
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: pop(int id,AvlTreeNode<T> *&root){
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: pop(int id,IndexAvlTreeNode<T> *&root){
     nb_node -= 1;
     if(id == idx()){
         root = pop_self();
         return this;
     }
     else if(id < idx()){
-        AvlTreeNode<T> * res = left->pop(id,left);
+        IndexAvlTreeNode<T> * res = left->pop(id,left);
         if(left != nullptr)
             left->father = this;
         root = maintain_balance();
         return res;
     }
     else{
-        AvlTreeNode<T> * res = right->pop(id - idx() - 1,right);
+        IndexAvlTreeNode<T> * res = right->pop(id - idx() - 1,right);
         if(right != nullptr)
             right->father = this;
         root = maintain_balance();
@@ -292,8 +292,7 @@ AvlTreeNode<T> * AvlTreeNode<T>:: pop(int id,AvlTreeNode<T> *&root){
 }
 
 template <typename T>
-AvlTreeNode<T>* AvlTreeNode<T>::insert(int id,const T& dt){
-    nb_node += 1;
+IndexAvlTreeNode<T>* IndexAvlTreeNode<T>::insert(int id,const T& dt){
 
     if(id <= idx()){
         insert_left(id,dt);
@@ -306,9 +305,9 @@ AvlTreeNode<T>* AvlTreeNode<T>::insert(int id,const T& dt){
 }
 
 template <typename T>
-void AvlTreeNode<T>:: insert_left(int id,const T& dt){
+void IndexAvlTreeNode<T>:: insert_left(int id,const T& dt){
     if(left == nullptr){
-        left = new AvlTreeNode(dt);
+        left = new IndexAvlTreeNode(dt);
         link_left(left);
     }
     else{
@@ -317,9 +316,9 @@ void AvlTreeNode<T>:: insert_left(int id,const T& dt){
     left->father = this;
 }
 template <typename T>
-void AvlTreeNode<T>:: insert_right(int id,const T& dt){
+void IndexAvlTreeNode<T>:: insert_right(int id,const T& dt){
     if(right == nullptr){
-        right = new AvlTreeNode(dt);
+        right = new IndexAvlTreeNode(dt);
         link_right(right);
     }
     else{
@@ -329,8 +328,8 @@ void AvlTreeNode<T>:: insert_right(int id,const T& dt){
 }
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: rotate_left(){
-    AvlTreeNode<T> * new_root = left;
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: rotate_left(){
+    IndexAvlTreeNode<T> * new_root = left;
     left = new_root->right;
     if(left != nullptr)
         left->father = this;
@@ -346,8 +345,8 @@ AvlTreeNode<T> * AvlTreeNode<T>:: rotate_left(){
     return new_root;
 }
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: rotate_right(){
-    AvlTreeNode<T> * new_root = right;
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: rotate_right(){
+    IndexAvlTreeNode<T> * new_root = right;
     right = new_root->left;
     if(right != nullptr)
         right->father = this;
@@ -363,7 +362,7 @@ AvlTreeNode<T> * AvlTreeNode<T>:: rotate_right(){
 }
 
 template <typename T>
-AvlTreeNode<T> * AvlTreeNode<T>:: maintain_balance(){
+IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: maintain_balance(){
     update_high();
     update_nb();
     int high_diff = left_high() - right_high();
