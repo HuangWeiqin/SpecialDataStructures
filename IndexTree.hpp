@@ -63,7 +63,9 @@ IndexTree<T>::IndexTree(const IndexTree & other){
         IndexAvlTreeNode<T>* cur_node = array[i];
         cur_node->prev=prev_node;
         prev_node->next = cur_node;
+        cout<<cur_node->value()<<" ";
     }
+
     delete array;
 };
 
