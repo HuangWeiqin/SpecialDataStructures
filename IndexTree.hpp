@@ -77,7 +77,6 @@ IndexTree<T>::~IndexTree(){
     while (root != nullptr)
     {
         IndexAvlTreeNode<T>* next = root->next;
-        cout << root->value()<<" ";
         delete root;
         root = next; 
     }
@@ -125,6 +124,16 @@ void IndexTree<T>::insert(int idx ,const T& data){
     else{
         root = root->insert(idx,data);
     }
+}
+
+template <typename T>
+void IndexTree<T>::modify(int idx ,const T& data){
+    if(root == nullptr)
+        throw IdxNotExistException(idx);
+    IndexAvlTreeNode<T> *res = root->addressing(idx);
+    if(res == nullptr)
+        throw IdxNotExistException(idx);
+    res->data = data;
 }
 
 
