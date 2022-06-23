@@ -1,24 +1,17 @@
 #include <iostream>
-#include "AvlTreeNode.hpp"
+#include "IndexTree.hpp"
 #include <vector>
 
 using namespace std;
 
 
 void test2(){
-    AvlTreeNode<int> node(0);
-    AvlTreeNode<int> *root = &node;
-    for(int i=1;i<200;++i){
-        root = root->insert(i,i);
-    }
-    for(int i=0;i<50;++i){
-        
-        auto res = root->pop((i*56)%107,root);
-        cout<<"remove"<<res->value()<<endl;
-    }
-    
+    IndexTree<int> tv;
+    tv.insert(0,89);
+    tv.insert(1,65);
+    tv.insert(2,59);
 
-    cout << root->addressing(20)->value() << endl;
+    cout<<tv.addressing(1)<<endl;
 }
 
 int main()

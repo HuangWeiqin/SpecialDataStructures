@@ -1,4 +1,4 @@
-#ifndef AVLTREENODE_INCLUDED
+#ifndef INDEXAVLTREENODE_INCLUDED
 #include <iostream>
 using namespace std;
 template <typename T>
@@ -6,10 +6,11 @@ class IndexAvlTreeNode
 {
     public:
         IndexAvlTreeNode(const T&dt):data(dt){};
+        IndexAvlTreeNode(const IndexAvlTreeNode&);
         IndexAvlTreeNode<T>* insert(int,const T&);
         IndexAvlTreeNode<T>* pop(int,IndexAvlTreeNode<T> *&);
         IndexAvlTreeNode<T>* addressing(int);
-        T &value(){return data;}
+        T value(){return data;}
     protected:
         T data;
         int nb_node = 1;
@@ -43,6 +44,20 @@ class IndexAvlTreeNode
         IndexAvlTreeNode<T> * pop_back(IndexAvlTreeNode<T> *&);
         IndexAvlTreeNode<T> * pop_front(IndexAvlTreeNode<T> *&);
 };
+
+template <typename T>
+IndexAvlTreeNode<T>::IndexAvlTreeNode(const IndexAvlTreeNode& other):
+data(other.data),
+nb_node(other.nb_node),
+high(other.high){
+    if(nb_node == 1)
+        return;
+    IndexAvlTreeNode<T> *ptr_array[nb_node];
+    IndexAvlTreeNode<T> * cur = left_extrema();
+    for()
+
+    
+}
 
 template <typename T>
 IndexAvlTreeNode<T> * IndexAvlTreeNode<T>::pop_back(IndexAvlTreeNode<T> *& root){
@@ -375,5 +390,5 @@ IndexAvlTreeNode<T> * IndexAvlTreeNode<T>:: maintain_balance(){
     return this;
 }
 
-#define AVLTREENODE_INCLUDED
+#define INDEXAVLTREENODE_INCLUDED
 #endif
