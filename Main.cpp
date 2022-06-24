@@ -1,6 +1,7 @@
 #include <iostream>
 #include "IndexTree.hpp"
 #include <vector>
+#include "TreeVector.hpp"
 
 using namespace std;
 
@@ -25,9 +26,12 @@ void test2(){
 
     
     
-    IndexTree<int> tvd =  tv.slice(89,105);
-    tvd =  tv.slice(89,345);
-    cout <<tvd.size()<<" ";
+    TreeVector<int> tvs;
+    
+    tvs.insert(0,69);
+    TreeVector<int> tve = tvs;
+    tvs.insert(0,6999);
+    cout << tve.addressing(0);
 }
 
 int main()

@@ -36,7 +36,6 @@ IndexTree<T>& IndexTree<T>::operator=(IndexTree<T>&& other){
         clear();
         root = other.root;
         other.root = nullptr;
-        cout <<"fuck move"<<endl;
 }
 
 template <typename T>
@@ -111,7 +110,6 @@ template <typename T>
 IndexTree<T>::IndexTree(IndexTree && other){
     root = other.root;
     other.root = nullptr;
-    cout <<"new move"<<endl;
 };
 
 
