@@ -23,9 +23,11 @@ void test2(){
         tv.pop((i*17)%23);
     }
 
-    cout << tv.size()<<" ";
     
-    IndexTree<int> tvd(tv);
+    
+    IndexTree<int> tvd =  tv.slice(89,105);
+    tvd =  tv.slice(89,345);
+    cout <<tvd.size()<<" ";
 }
 
 int main()
