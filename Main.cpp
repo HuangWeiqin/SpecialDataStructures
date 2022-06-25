@@ -1,37 +1,49 @@
 #include <iostream>
 #include "IndexTree.hpp"
 #include <vector>
+#include <map>
+#include <set>
 #include "TreeVector.hpp"
 
 using namespace std;
 
 
 void test2(){
-    IndexTree<int> tv;
+    TreeVector<int> tv;
+    vector<int> vc;
+    set<int> sc;
     //tv.insert(0,89);
     //tv.insert(1,65);
     //tv.insert(2,59);
+    int nb = 3000;
 
-    for(int i = 0;i<25;++i){
+    for(int i = 0;i<3006;++i){
         tv.insert(i,i);
+        vc.push_back(i);
+        //sc.insert(i);
     }
 
-    for(int i = 0;i<1190;++i){
-        tv.insert((i*17)%23,i);
+    for(int i = 0;i<nb;++i){
+        tv.insert(i%3000,i);
+        vc.insert(vc.begin() + i%3000,i);
+        tv.pop((i*13)%1777);
+        vc.erase(vc.begin() + (i*13)%1777);
+        //vc.push_back(i);
+        //sc.insert(i);
     }
+    cout << " finish insert high: "<<tv.high()<<endl;
 
-    for(int i = 0;i<234;++i){
-        tv.pop((i*17)%23);
+    for(int i = 0;i<nb;++i){
+        int a = tv.addressing(i);
+        int b = vc[i];
+        if(a!=b){
+            cout << "at idx:"<<i<<" "<<a<<"!="<<b<<endl;
+            break;
+        }
+        //int d = sc.count(i);
     }
-
     
-    
-    TreeVector<int> tvs;
-    
-    tvs.insert(0,69);
-    TreeVector<int> tve = tvs;
-    tvs.insert(0,6999);
-    cout << tve.addressing(0);
+    cout << " finish reading"<<endl;
 }
 
 int main()

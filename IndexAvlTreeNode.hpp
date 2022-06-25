@@ -12,7 +12,7 @@ class IndexAvlTreeNode
         IndexAvlTreeNode<T>* insert(int,const T&);
         IndexAvlTreeNode<T>* pop(int,IndexAvlTreeNode<T> *&);
         IndexAvlTreeNode<T>* addressing(int);
-        T value(){return data;}
+        T value(){return move(data);}
     protected:
         T data;
         int high = 0;

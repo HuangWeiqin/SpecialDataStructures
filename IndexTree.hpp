@@ -26,6 +26,7 @@ class IndexTree{
         void insert(int,const T&);
         void modify(int,const T&);
         int const size() const;
+        int const high() const;
     private:
         IndexAvlTreeNode<T> *root = nullptr;
         IndexAvlTreeNode<T>* copy_tree_helper(const IndexAvlTreeNode<T>*,IndexAvlTreeNode<T>**);
@@ -117,12 +118,12 @@ IndexTree<T>::IndexTree(IndexTree && other){
 
 template <typename T>
 IndexTree<T> IndexTree<T>::slice(int from,int to){
-    IndexTree<T> *res = new IndexTree();
+    IndexTree<T> res;
     if(size() != 0)
         for(int i=max(0,from);i<min(size(),to);++i){
-            res->insert(i,addressing(i));
+            res.insert(i,addressing(i));
         }
-    return move(*res);
+    return move(res);
 }
 
 template <typename T>
@@ -132,7 +133,7 @@ T IndexTree<T>::addressing(int idx){
     IndexAvlTreeNode<T> *res = root->addressing(idx);
     if(res == nullptr)
         throw IdxNotExistException(idx);
-    return move(res->value());
+    return res->value();
 }
 
 template <typename T>
@@ -142,7 +143,9 @@ T IndexTree<T>::pop(int idx){
     IndexAvlTreeNode<T> *res = root->pop(idx,root);
     if(res == nullptr)
         throw IdxNotExistException(idx);
-    return move(res->value());
+    T val = res->value();
+    delete res;
+    return move(val);
 }
 
 template <typename T>
@@ -170,6 +173,13 @@ int const IndexTree<T>::size() const{
     if(root == nullptr)
         return 0;
     return root->nb_node;
+}
+
+template <typename T>
+int const IndexTree<T>::high() const{
+    if(root == nullptr)
+        return 0;
+    return root->high;
 }
 
 #define INDEXAVLTREE_INCLUDED

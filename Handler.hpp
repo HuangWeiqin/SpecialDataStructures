@@ -15,7 +15,6 @@ class Handler{
         void dec();
         T *data = nullptr;
         int *count = nullptr;
-    protected:
         virtual void writing();
         virtual void copy_data(){data = new T(*data);};
     
@@ -26,8 +25,7 @@ Handler<T>::Handler():data(new T()),count(new int(1))
 {}
 
 template <typename T>
-Handler<T>::Handler(const Handler<T>& other):count(other.count){
-    data = other.data;
+Handler<T>::Handler(const Handler<T>& other):data(other.data),count(other.count){
     inc();
 }
 
@@ -74,7 +72,6 @@ void Handler<T>::writing(){
         dec();
         count = new int(1);
     }
-    
 }
 
 #define HANDLER_INCLUDED
