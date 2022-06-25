@@ -18,9 +18,11 @@ class IndexTree{
         ~IndexTree();
         IndexTree(const IndexTree &);
         IndexTree(IndexTree &&);
-        IndexTree && slice(int ,int );
-        T && addressing(int);
-        T && pop(int);
+        IndexTree<T>& operator=(IndexTree<T>&&);
+        IndexTree slice(int ,int );
+        T addressing(int);
+        T pop(int);
+        void clear();
         void insert(int,const T&);
         void modify(int,const T&);
         int const size() const;
@@ -28,6 +30,13 @@ class IndexTree{
         IndexAvlTreeNode<T> *root = nullptr;
         IndexAvlTreeNode<T>* copy_tree_helper(const IndexAvlTreeNode<T>*,IndexAvlTreeNode<T>**);
 };
+
+template <typename T>
+IndexTree<T>& IndexTree<T>::operator=(IndexTree<T>&& other){
+        clear();
+        root = other.root;
+        other.root = nullptr;
+}
 
 template <typename T>
 IndexAvlTreeNode<T>* IndexTree<T>::copy_tree_helper(const IndexAvlTreeNode<T>* node, IndexAvlTreeNode<T>** array){
@@ -67,6 +76,18 @@ IndexTree<T>::IndexTree(const IndexTree & other){
     delete[]  array;
 };
 
+template <typename T>
+void IndexTree<T>::clear(){
+    if(root == nullptr)
+        return;
+    root = root->addressing(0);
+    while (root != nullptr)
+    {
+        IndexAvlTreeNode<T>* next = root->next;
+        delete root;
+        root = next; 
+    }
+}
 
 
 template <typename T>
@@ -83,6 +104,8 @@ IndexTree<T>::~IndexTree(){
     
 };
 
+
+
 template <typename T>
 IndexTree<T>::IndexTree(IndexTree && other){
     root = other.root;
@@ -93,12 +116,17 @@ IndexTree<T>::IndexTree(IndexTree && other){
 
 
 template <typename T>
-IndexTree<T> && IndexTree<T>::slice(int from,int to){
-
+IndexTree<T> IndexTree<T>::slice(int from,int to){
+    IndexTree<T> *res = new IndexTree();
+    if(size() != 0)
+        for(int i=max(0,from);i<min(size(),to);++i){
+            res->insert(i,addressing(i));
+        }
+    return move(*res);
 }
 
 template <typename T>
-T && IndexTree<T>::addressing(int idx){
+T IndexTree<T>::addressing(int idx){
     if(root == nullptr)
         throw IdxNotExistException(idx);
     IndexAvlTreeNode<T> *res = root->addressing(idx);
@@ -108,7 +136,7 @@ T && IndexTree<T>::addressing(int idx){
 }
 
 template <typename T>
-T && IndexTree<T>::pop(int idx){
+T IndexTree<T>::pop(int idx){
     if(root == nullptr)
         throw IdxNotExistException(idx);
     IndexAvlTreeNode<T> *res = root->pop(idx,root);
